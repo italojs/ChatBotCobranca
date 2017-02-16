@@ -19,12 +19,12 @@ namespace ChatBotCobranca
         /// </summary>
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
+            //In the ConnectorClient we need set who the bot will reply the message
+            //the activity.ServiceUrl provide it, in this case our ServiceUrl are the localhost
+            ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
+
             if (activity.Type == ActivityTypes.Message)
             {
-                //In the ConnectorClient we need set who the bot will reply the message
-                //the activity.ServiceUrl provide it, in this case our ServiceUrl are the localhost
-                ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
-
                 //our botMessage object
                 Activity reply;
 
@@ -69,6 +69,10 @@ namespace ChatBotCobranca
                 // Handle conversation state changes, like members being added and removed
                 // Use Activity.MembersAdded and Activity.MembersRemoved and Activity.Action for info
                 // Not available in all channels
+                var nome = "Michele";
+                Activity reply = message.CreateReply($"Olá { nome }. Pague seu débito com 20% de desconto. Acesse: https://sky.negocie.online/2YWLJFD e retire seu boleto.");
+                return reply;
+
             }
             else if (message.Type == ActivityTypes.ContactRelationUpdate)
             {
