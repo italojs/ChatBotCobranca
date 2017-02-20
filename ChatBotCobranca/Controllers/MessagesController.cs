@@ -7,10 +7,12 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
+using Microsoft.Bot.Builder.Dialogs;
+using ChatBotCobranca.Dialogs;
 
 namespace ChatBotCobranca
 {
-    [BotAuthentication]
+    //[BotAuthentication]
     public class MessagesController : ApiController
     {
         /// <summary>
@@ -23,35 +25,18 @@ namespace ChatBotCobranca
             //the activity.ServiceUrl provide it, in this case our ServiceUrl are the localhost
             ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
 
+            
+
+            Activity reply;
             if (activity.Type == ActivityTypes.Message)
             {
-                //our botMessage object
-                Activity reply;
-
-                //chosing the message wicth the bot will reply
-                if (activity.Text.Contains("ola"))
-                {
-                    //setting bot message
-                    reply = activity.CreateReply($"Olá, no que posso ajudar");
-                }else if(activity.Text.Contains("tudo bem?"))
-                {
-                    reply = activity.CreateReply($"tudo sim, e você?");
-                }
-                else if (activity.Text.Contains("tudo sim"))
-                {
-                    reply = activity.CreateReply($"ai que ótimo");
-                }
-                else
-                {
-                    reply = activity.CreateReply($"ai, me desculpa eu não entedi");
-                }
-
-                // return our reply to the user
-                await connector.Conversations.ReplyToActivityAsync(reply);
+                //head to some dialog or dialogs
+                await Conversation.SendAsync(activity, () => new DialogHub());
             }
             else
             {
-                HandleSystemMessage(activity);
+                reply = HandleSystemMessage(activity);
+                connector.Conversations.ReplyToActivity(reply);
             }
             var response = Request.CreateResponse(HttpStatusCode.OK);
             return response;
@@ -69,8 +54,9 @@ namespace ChatBotCobranca
                 // Handle conversation state changes, like members being added and removed
                 // Use Activity.MembersAdded and Activity.MembersRemoved and Activity.Action for info
                 // Not available in all channels
-                var nome = "Michele";
-                Activity reply = message.CreateReply($"Olá { nome }. Pague seu débito com 20% de desconto. Acesse: https://sky.negocie.online/2YWLJFD e retire seu boleto.");
+                
+                //create a message Activity
+                Activity reply = message.CreateReply($"Olá, como posso ajudar?");
                 return reply;
 
             }
