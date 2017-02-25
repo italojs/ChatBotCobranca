@@ -25,7 +25,7 @@ namespace ChatBotCobranca
             if (activity != null && activity.GetActivityType() == ActivityTypes.Message)
             {
 
-                await Conversation.SendAsync(activity, () => new DialogHub();
+                await Conversation.SendAsync(activity, () => new DialogHub());
             }
             else
             {
