@@ -20,7 +20,12 @@ namespace ChatBotCobranca.Dialogs
     public class DialogHub : LuisDialog<object>
     {
         
-
+        private static QueryclientInfo client;
+        public DialogHub(QueryclientInfo _client)
+        {
+            //Simulate some query
+            client = _client;
+        }
 
         [LuisIntent("VerFatura")]
         public async Task VerFatura(IDialogContext context, LuisResult result)
@@ -28,7 +33,7 @@ namespace ChatBotCobranca.Dialogs
             
             await context.PostAsync("Só um minuto por favor, estou consultando.");
             Thread.Sleep(3000);
-            await context.PostAsync($"Sua fatura está em R$ R$ 500,00 senhor.");
+            await context.PostAsync($"Sua fatura está em R$ {client.Fatura} senhor.");
             Thread.Sleep(3000);
             await context.PostAsync("Posso ajudar em mais alguma coisa senhor?");
 
@@ -39,8 +44,16 @@ namespace ChatBotCobranca.Dialogs
         [LuisIntent("EnviaEmail")]
         public async Task EnviaEmail(IDialogContext context, LuisResult result)
         {
-           
-            await context.PostAsync("Sua fatura foi enviada para o seu email");
+            EntityRecommendation entidade;
+            if (result.TryFindEntity("TipoDado::Fatura", out entidade))
+            {
+                await context.PostAsync("Sua fatura foi enviada para o seu email");
+            }
+            else
+            {
+                await context.PostAsync("Desculpe senho, pode repetir a frase com oque você quer enviar por email?");
+            }
+            
             context.Wait(MessageReceived);
         }
 
