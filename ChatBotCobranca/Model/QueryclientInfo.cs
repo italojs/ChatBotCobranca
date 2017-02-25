@@ -13,7 +13,7 @@ namespace ChatBotCobranca.Model
         public float Fatura { get; private set; }
         public string Email { get; private set; }
 
-        public QueryclientInfo(string name, string endereco, float fatura,string email)
+        public  QueryclientInfo(string name, string endereco, float fatura,string email)
         {
             Name = name;
             Endereco = endereco;

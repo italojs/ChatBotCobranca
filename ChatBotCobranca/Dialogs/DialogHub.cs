@@ -19,30 +19,32 @@ namespace ChatBotCobranca.Dialogs
     //LuisDialog<object> = using Microsoft.Bot.Builder.Dialogs
     public class DialogHub : LuisDialog<object>
     {
-        QueryclientInfo client;
+        
 
-        public DialogHub()
-        {
-            //Simulate some query
-            client = new QueryclientInfo("italo jose", "rua jaquitiba, 1771", (float)200.35, "italo.i@live.com");
-           
-        }
-       
 
-        //Intent
         [LuisIntent("VerFatura")]
-        public async Task VerFatura(IDialogContext context)
-        { 
-
-            await context.PostAsync($"Só um minuto por favor, estou consultando.");
+        public async Task VerFatura(IDialogContext context, LuisResult result)
+        {
+            
+            await context.PostAsync("Só um minuto por favor, estou consultando.");
             Thread.Sleep(3000);
-            await context.PostAsync($"Sua fatura está em R$ {client.Fatura} senhor.");
+            await context.PostAsync($"Sua fatura está em R$ R$ 500,00 senhor.");
             Thread.Sleep(3000);
-            await context.PostAsync($"Posso ajudar em mais alguma coisa senhor?");
+            await context.PostAsync("Posso ajudar em mais alguma coisa senhor?");
 
             context.Wait(MessageReceived);
 
         }
+
+        [LuisIntent("EnviaEmail")]
+        public async Task EnviaEmail(IDialogContext context, LuisResult result)
+        {
+           
+            await context.PostAsync("Sua fatura foi enviada para o seu email");
+            context.Wait(MessageReceived);
+        }
+
+
 
 
 

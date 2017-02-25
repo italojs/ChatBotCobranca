@@ -9,10 +9,11 @@ using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
 using Microsoft.Bot.Builder.Dialogs;
 using ChatBotCobranca.Dialogs;
+using ChatBotCobranca.Model;
 
 namespace ChatBotCobranca
 {
-    //[BotAuthentication]
+    [BotAuthentication]
     public class MessagesController : ApiController
     {
         /// <summary>
@@ -21,25 +22,17 @@ namespace ChatBotCobranca
         /// </summary>
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
-            //In the ConnectorClient we need set who the bot will reply the message
-            //the activity.ServiceUrl provide it, in this case our ServiceUrl are the localhost
-            ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
-
-            
-
-            Activity reply;
-            if (activity.Type == ActivityTypes.Message)
+            if (activity != null && activity.GetActivityType() == ActivityTypes.Message)
             {
-                //head to some dialog or dialogs
-                await Conversation.SendAsync(activity, () => new DialogHub());
+
+                await Conversation.SendAsync(activity, () => new DialogHub();
             }
             else
             {
-                reply = HandleSystemMessage(activity);
-                connector.Conversations.ReplyToActivity(reply);
+                HandleSystemMessage(activity);
             }
-            var response = Request.CreateResponse(HttpStatusCode.OK);
-            return response;
+            return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
+
         }
 
         private Activity HandleSystemMessage(Activity message)
