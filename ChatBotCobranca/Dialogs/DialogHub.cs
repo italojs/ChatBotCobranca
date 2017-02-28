@@ -9,6 +9,7 @@ using Microsoft.Bot.Connector;
 using Microsoft.Bot.Builder.Luis.Models;
 using System.Threading;
 using ChatBotCobranca.Model;
+using ChatBotCobranca.Utils;
 
 namespace ChatBotCobranca.Dialogs
 {
@@ -53,20 +54,24 @@ namespace ChatBotCobranca.Dialogs
             //getting a EntityType
             EntityRecommendation entidade;
             //
-            if (result.TryFindEntity("TipoDado::Fatura", out entidade))
+            if (result.TryFindEntity("Email", out entidade))
             {
-                //promptDialog reply something to user(probabily a question) and when go to another method when the user response
-                //the .confirm is when the bot expect a boolean answer(e.g.: yes or no)
-                //PromptDialog.Confirm(YouContext, TheNextMethodWithoutParamers,"Your message before go to NextMethod);
-                PromptDialog.Confirm(context, TrocarEmail,"Seu email atual é: "+ client.Email +", você gostaria de trocá-lo?"); // here have the Exception
-               
+              
+                await context.PostAsync($"ok, sua fatura será enviada no email {entidade.Entity.Replace(" ", string.Empty)}");
+                context.Wait(MessageReceived);
+
             }
             else
             {
-                await context.PostAsync("Desculpe senhor, pode repetir a frase com oque você quer enviar por email?");
+
+                //promptDialog reply something to user(probabily a question) and when go to another method when the user response
+                //the .confirm is when the bot expect a boolean answer(e.g.: yes or no)
+                //PromptDialog.Confirm(YouContext, TheNextMethodWithoutParamers,"Your message before go to NextMethod);
+                PromptDialog.Confirm(context, TrocarEmail, $"Seu email atual é:  {client.Email} , você gostaria de trocá-lo?");
+                
             }
             
-            context.Wait(MessageReceived);
+           
         }
 
        
@@ -74,13 +79,44 @@ namespace ChatBotCobranca.Dialogs
         {
             if (await confirmation)
             {
-                await context.PostAsync("Ok, a fatura foi enviado para o e-mail");
+                PromptDialog.Text(context, AtualizandoEmail, "Qual é o seu e-mail?");
             }
             else
             {
                 await context.PostAsync($"Ok, a fatura foi enviado para o e-mail: {client.Email}.");
+                context.Wait(MessageReceived);
             }
-            context.Wait(MessageReceived);
+            
+        }
+
+        private async Task AtualizandoEmail(IDialogContext context, IAwaitable<string> result)
+        {
+            IMessageActivity Activity = context. Activity.AsMessageActivity();
+            client.updatetEmail(Activity.Text);
+
+
+            if (Ultils.IsValidEmail(client.Email))
+            {
+                PromptDialog.Confirm(context, ConfirmarEmail, $"Ok, você confirma que esse e-mail {client.Email} está correto?");
+            }
+            else
+            {
+                PromptDialog.Text(context, AtualizandoEmail, $"Esse é um e-mail inválido, por favor entre com novo email valido.");
+            }
+
+        }
+
+        private async Task ConfirmarEmail(IDialogContext context, IAwaitable<bool> result)
+        {
+            if (await result)
+            {
+                await context.PostAsync($"Ok, enviaremos sua fatura para o e-mail: {client.Email}.");
+            }
+            else
+            {
+                PromptDialog.Text(context, AtualizandoEmail, "Qual é o seu e-mail?");
+            }
+
         }
 
     }

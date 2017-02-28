@@ -20,6 +20,10 @@ namespace ChatBotCobranca.Model
             Fatura = fatura;
             Email = email;
         }
+        public void updatetEmail(string _email)
+        {
+            Email = _email;
+        }
 
 
     }
