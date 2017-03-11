@@ -9,6 +9,7 @@ using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
 using Microsoft.Bot.Builder.Dialogs;
 using ChatBotCobranca.Dialogs;
+using ChatBotCobranca.Model;
 
 namespace ChatBotCobranca
 {

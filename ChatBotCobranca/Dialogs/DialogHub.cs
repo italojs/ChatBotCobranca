@@ -45,9 +45,13 @@ namespace ChatBotCobranca.Dialogs
         public async Task EnviaEmail(IDialogContext context, LuisResult result)
         {
             EntityRecommendation entidade;
-            if (result.TryFindEntity("TipoDado::Fatura", out entidade))
+            if (result.TryFindEntity("TraitAnexo::Fatura", out entidade))
             {
                 await context.PostAsync("Sua fatura foi enviada para o seu email");
+            }
+            else if (result.TryFindEntity("TraitAnexo::Protocolo", out entidade))
+            {
+                await context.PostAsync("Seu protocolo foi enviada para o seu email");
             }
             else
             {
