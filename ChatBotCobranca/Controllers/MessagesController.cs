@@ -20,6 +20,9 @@ namespace ChatBotCobranca
         /// POST: api/Messages
         /// Receive a message from a user and reply to it
         /// </summary>
+        /// 
+
+            //this code is only for a example of how is the bot framwork structure, please, ignore the bad pratices used here
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
             if (activity != null && activity.GetActivityType() == ActivityTypes.Message)

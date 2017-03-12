@@ -56,14 +56,34 @@ namespace ChatBotCobranca.Dialogs
             //
             if (result.TryFindEntity("Email", out entidade))
             {
-              
-                await context.PostAsync($"ok, sua fatura será enviada no email {entidade.Entity.Replace(" ", string.Empty)}");
+                if(result.TryFindEntity("TraitAnexo::Protocolo", out entidade)){
+                    await context.PostAsync($"ok, seu protocolo será enviada no email {entidade.Entity.Replace(" ", string.Empty)}");
+                }
+                else if(result.TryFindEntity("TraitAnexo::Fatura", out entidade))
+                {
+                    await context.PostAsync($"ok, sua fatura será enviada no email {entidade.Entity.Replace(" ", string.Empty)}");
+                }
+                else
+                {
+                    await context.PostAsync($"Desculpe, pode repetir com oque voce deseja envia no seu email?");
+                }
                 context.Wait(MessageReceived);
 
             }
             else
             {
-
+                if (result.TryFindEntity("TraitAnexo::Protocolo", out entidade)){
+                    context.PrivateConversationData.SetValue("TraitAnexo", "Protocolo");
+                    
+                }
+                else if (result.TryFindEntity("TraitAnexo::Fatura", out entidade))
+                {
+                    context.PrivateConversationData.SetValue("TraitAnexo", "Protocolo");
+                }
+                else
+                {
+                    //await context.PostAsync($"Desculpe, pode repetir com oque voce deseja envia no seu email?");
+                }
                 //promptDialog reply something to user(probabily a question) and when go to another method when the user response
                 //the .confirm is when the bot expect a boolean answer(e.g.: yes or no)
                 //PromptDialog.Confirm(YouContext, TheNextMethodWithoutParamers,"Your message before go to NextMethod);
@@ -108,9 +128,20 @@ namespace ChatBotCobranca.Dialogs
 
         private async Task ConfirmarEmail(IDialogContext context, IAwaitable<bool> result)
         {
+            string TraitAnexo = null;
             if (await result)
             {
-                await context.PostAsync($"Ok, enviaremos sua fatura para o e-mail: {client.Email}.");
+                context.PrivateConversationData.TryGetValue("TraitAnexo", out TraitAnexo);
+                if(TraitAnexo == "Protocolo")
+                {
+                    await context.PostAsync($"Ok, enviaremos seu protcolo para o e-mail: {client.Email}.");
+                }
+                else
+                {
+                    await context.PostAsync($"Ok, enviaremos sua fatura para o e-mail: {client.Email}.");
+                }
+                context.Wait(MessageReceived);
+                
             }
             else
             {
