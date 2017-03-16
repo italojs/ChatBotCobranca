@@ -21,11 +21,11 @@ namespace ChatBotCobranca.Dialogs
     public class DialogHub : LuisDialog<object>
     {
         
-        private static QueryclientInfo client;
-        public DialogHub(QueryclientInfo _client)
+        private static QueryclientInfo _client;
+        public DialogHub(QueryclientInfo client)
         {
             //Simulate some query
-            client = _client;
+            _client = client;
         }
 
         //Luis intent
@@ -38,7 +38,7 @@ namespace ChatBotCobranca.Dialogs
             await context.PostAsync("Só um minuto por favor, estou consultando.");
             //seting a time only for the bot looks like it is typing
             Thread.Sleep(3000);
-            await context.PostAsync($"Sua fatura está em R$ {client.Fatura} senhor.");
+            await context.PostAsync($"Sua fatura está em R$ {_client.Fatura} senhor.");
             Thread.Sleep(3000);
             await context.PostAsync("Posso ajudar em mais alguma coisa senhor?");
 
@@ -86,7 +86,7 @@ namespace ChatBotCobranca.Dialogs
                 //promptDialog reply something to user(probabily a question) and when go to another method when the user response
                 //the .confirm is when the bot expect a boolean answer(e.g.: yes or no)
                 //PromptDialog.Confirm(YouContext, TheNextMethodWithoutParamers,"Your message before go to NextMethod);
-                PromptDialog.Confirm(context, TrocarEmail, $"Seu email atual é:  {client.Email} , você gostaria de trocá-lo?");
+                PromptDialog.Confirm(context, TrocarEmail, $"Seu email atual é:  {_client.Email} , você gostaria de trocá-lo?");
                 
             }
             
@@ -107,11 +107,11 @@ namespace ChatBotCobranca.Dialogs
 
                 if (TraitAnexo == "Protocolo")
                 {
-                    await context.PostAsync($"Ok, enviaremos seu protcolo para o e-mail: {client.Email}.");
+                    await context.PostAsync($"Ok, enviaremos seu protcolo para o e-mail: {_client.Email}.");
                 }
                 else
                 {
-                    await context.PostAsync($"Ok, enviaremos sua fatura para o e-mail: {client.Email}.");
+                    await context.PostAsync($"Ok, enviaremos sua fatura para o e-mail: {_client.Email}.");
                 }
                 context.Wait(MessageReceived);
             }
@@ -121,12 +121,12 @@ namespace ChatBotCobranca.Dialogs
         private async Task AtualizandoEmail(IDialogContext context, IAwaitable<string> result)
         {
             IMessageActivity Activity = context. Activity.AsMessageActivity();
-            client.updatetEmail(Activity.Text);
+            _client.updatetEmail(Activity.Text);
 
 
-            if (Ultils.IsValidEmail(client.Email))
+            if (Ultils.IsValidEmail(_client.Email))
             {
-                PromptDialog.Confirm(context, ConfirmarEmail, $"Ok, você confirma que esse e-mail {client.Email} está correto?");
+                PromptDialog.Confirm(context, ConfirmarEmail, $"Ok, você confirma que esse e-mail {_client.Email} está correto?");
             }
             else
             {
@@ -143,11 +143,11 @@ namespace ChatBotCobranca.Dialogs
                 context.PrivateConversationData.TryGetValue("TraitAnexo", out TraitAnexo);
                 if(TraitAnexo == "Protocolo")
                 {
-                    await context.PostAsync($"Ok, enviaremos seu protcolo para o e-mail: {client.Email}.");
+                    await context.PostAsync($"Ok, enviaremos seu protcolo para o e-mail: {_client.Email}.");
                 }
                 else
                 {
-                    await context.PostAsync($"Ok, enviaremos sua fatura para o e-mail: {client.Email}.");
+                    await context.PostAsync($"Ok, enviaremos sua fatura para o e-mail: {_client.Email}.");
                 }
                 context.Wait(MessageReceived);
                 
