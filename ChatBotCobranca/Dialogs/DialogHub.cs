@@ -54,109 +54,76 @@ namespace ChatBotCobranca.Dialogs
         public async Task EnviaEmail(IDialogContext context, LuisResult result)
         {
             //getting a EntityType
-            EntityRecommendation entidade;
-            //
-            if (result.TryFindEntity("Email", out entidade))
+            if (result.TryFindEntity("TraitAnexo", out EntityRecommendation anexo))
             {
-                if(result.TryFindEntity("TraitAnexo::Protocolo", out entidade)){
-                    await context.PostAsync($"ok, seu protocolo será enviada no email {entidade.Entity.Replace(" ", string.Empty)}");
-                }
-                else if(result.TryFindEntity("TraitAnexo::Fatura", out entidade))
+                if (result.TryFindEntity("Email", out EntityRecommendation email))
                 {
-                    await context.PostAsync($"ok, sua fatura será enviada no email {entidade.Entity.Replace(" ", string.Empty)}");
+                    var msg = EnviaAnexo(anexo.Entity, email.Entity);
+                    await context.PostAsync(msg);
+                    context.Wait(MessageReceived);
                 }
                 else
                 {
-                    await context.PostAsync($"Desculpe, pode repetir com oque voce deseja envia no seu email?");
+                    context.PrivateConversationData.SetValue("TraitAnexo", anexo.Entity);
+                    PromptDialog.Confirm(context, TrocarEmail, $"Seu email atual é:  {_client.Email} , você gostaria de trocá-lo?");
                 }
-                context.Wait(MessageReceived);
-
             }
             else
             {
-                if (result.TryFindEntity("TraitAnexo::Protocolo", out entidade)){
-                    context.PrivateConversationData.SetValue("TraitAnexo", "Protocolo");
-                    
-                }
-                else if (result.TryFindEntity("TraitAnexo::Fatura", out entidade))
-                {
-                    context.PrivateConversationData.SetValue("TraitAnexo", "Protocolo");
-                }
-                
-                //promptDialog reply something to user(probabily a question) and when go to another method when the user response
-                //the .confirm is when the bot expect a boolean answer(e.g.: yes or no)
-                //PromptDialog.Confirm(YouContext, TheNextMethodWithoutParamers,"Your message before go to NextMethod);
-                PromptDialog.Confirm(context, TrocarEmail, $"Seu email atual é:  {_client.Email} , você gostaria de trocá-lo?");
-                
+                await context.PostAsync("Desculpe, mas o que você deseja enviar por e-mail?");
+                context.Wait(MessageReceived);
             }
-            
-           
+
         }
 
-       
         private async Task TrocarEmail(IDialogContext context, IAwaitable<bool> confirmation)
         {
             if (await confirmation)
-            {
-                PromptDialog.Text(context, AtualizandoEmail, "Qual é o seu e-mail?");
-            }
+                PromptDialog.Text(context, AtualizaEmail, "Qual é o seu e-mail?");
             else
             {
-                string TraitAnexo = null;
-                context.PrivateConversationData.TryGetValue("TraitAnexo", out TraitAnexo);
-
-                if (TraitAnexo == "Protocolo")
-                {
-                    await context.PostAsync($"Ok, enviaremos seu protcolo para o e-mail: {_client.Email}.");
-                }
-                else
-                {
-                    await context.PostAsync($"Ok, enviaremos sua fatura para o e-mail: {_client.Email}.");
-                }
+                context.PrivateConversationData.TryGetValue("TraitAnexo", out string anexo);
+                var msg = EnviaAnexo(anexo, _client.Email);
+                await context.PostAsync(msg);
                 context.Wait(MessageReceived);
             }
-            
         }
 
-        private async Task AtualizandoEmail(IDialogContext context, IAwaitable<string> result)
+        private async Task AtualizaEmail(IDialogContext context, IAwaitable<string> result)
         {
-            IMessageActivity Activity = context. Activity.AsMessageActivity();
-            _client.updatetEmail(Activity.Text);
-
+            var activity = context. Activity.AsMessageActivity();
+            _client.updateEmail(activity.Text);
 
             if (Ultils.IsValidEmail(_client.Email))
-            {
                 PromptDialog.Confirm(context, ConfirmarEmail, $"Ok, você confirma que esse e-mail {_client.Email} está correto?");
-            }
             else
-            {
-                PromptDialog.Text(context, AtualizandoEmail, $"Esse é um e-mail inválido, por favor entre com novo email valido.");
-            }
+                PromptDialog.Text(context, AtualizaEmail, $"Esse é um e-mail inválido, por favor entre com novo email valido.");
 
         }
 
         private async Task ConfirmarEmail(IDialogContext context, IAwaitable<bool> result)
         {
-            string TraitAnexo = null;
             if (await result)
             {
-                context.PrivateConversationData.TryGetValue("TraitAnexo", out TraitAnexo);
-                if(TraitAnexo == "Protocolo")
-                {
-                    await context.PostAsync($"Ok, enviaremos seu protcolo para o e-mail: {_client.Email}.");
-                }
-                else
-                {
-                    await context.PostAsync($"Ok, enviaremos sua fatura para o e-mail: {_client.Email}.");
-                }
+                context.PrivateConversationData.TryGetValue("TraitAnexo", out string anexo);
+                var msg = EnviaAnexo(anexo, _client.Email);
+                await context.PostAsync(msg);
                 context.Wait(MessageReceived);
-                
             }
             else
+                PromptDialog.Text(context, AtualizaEmail, "Qual é o seu e-mail?");    
+        }
+        public string EnviaAnexo(string anexo, string email)
+        {
+            switch (anexo)
             {
-                PromptDialog.Text(context, AtualizandoEmail, "Qual é o seu e-mail?");
+                case "fatura":
+                    return $"ok, sua fatura será enviada no email {email.Replace(" ", String.Empty)}";
+                case "protocolo":
+                    return $"ok, seu protocolo será enviada no email {email.Replace(" ", String.Empty)}";
+                default:
+                    return $"Desculpe, pode repetir com oque voce deseja envia no seu email?";
             }
-
         }
 
     }
